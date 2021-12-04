@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Instagram Hashtag Generator</title>
+		<meta charset="utf-8">
+		<meta name="description" content="Opinionated hashtag generator for Instagram posts">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="assets/css/style.min.css?v20211119" />
+		<script src="assets/js/alpinejs.persist.3.5.1.min.js" defer></script>
+		<script src="assets/js/alpinejs.3.5.1.min.js" defer></script>
+		<script> if (window.matchMedia('(prefers-color-scheme: dark)').matches) { document.documentElement.classList.add('dark'); } else { document.documentElement.classList.remove('dark'); } </script>
+	</head>
+	<body x-data="
+		{
+			overlay: false,
+			store: $persist({
+				categories: [ { name: 'default', hashtags: [] } ],
+				hashtags: {},
+				ranges: [
+					{ name: '0-50k', amount: 14, hashtags: [] },
+					{ name: '50k-100k', amount: 9, hashtags: [] },
+					{ name: '100k-1m', amount: 5, hashtags: [] },
+					{ name: '> 1m', amount: 2, hashtags: [] }
+				]
+			})
+		}
+	" class="
+			font-sans
+			leading-normal
+			tracking-normal
+			bg-bg_0
+			text-fg_0
+	">
+
+		<main x-data="hashtags(store)" class="
+			absolute
+			inset-0
+			max-w-3xl
+			mx-auto
+			p-8
+		">
+
+			<div
+				class="
+					flex
+					flex-wrap
+					justify-center
+					gap-4
+					mb-8
+				"
+			>
+			<template x-for="
+				category in store.categories.map(cat => cat.name).
+				filter(cat => cat !== 'default')
+			">
+					<button
+						:aria-label="category"
+						class="
+							flex-initial
+							rounded
+							px-4
+							py-2
+						"
+						x-text="category"
+						x-data="{ toggle: false }"
+						:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+						@click="toggle = !toggle; fetchHashtags()"
+					></button>
+				</template>
+			</div>
+
+			<textarea
+				x-text="hashtags"
+				readonly
+				id="toCopy"
+				class="
+					w-full
+					sm:h-40
+					h-80
+					bg-bg_1
+					rounded
+					p-4
+					mb-4
+				"
+			></textarea>
+
+			<label
+				for="toCopy"
+				class="
+					cursor-pointer
+					float-right
+					rounded
+					px-4
+					py-2
+					mb-4
+					bg-orange
+					text-bg_0
+					focus:bg-br_orange
+				"
+				x-data
+				@click="
+					document.querySelector('#toCopy').select();
+					document.execCommand('copy');
+				"
+			>Copy to Clipboard</label>
+
+			<button
+				aria-label="Open overlay"
+				@click="overlay = !overlay"
+				class="
+					absolute
+					left-4
+					bottom-4
+					z-0
+					w-12
+					h-12
+					rounded-full
+					bg-blue
+					text-bg_0
+					text-xl
+				"
+			>+</button>
+
+			<section
+				x-show="overlay"
+				class="
+					absolute
+					inset-0
+					z-10
+					bg-bg_0
+				"
+			>
+
+				<div class="flex gap-4 m-4" x-data="{ newCategory: '' }">
+
+					<input
+						x-model="newCategory"
+						placeholder="...add category"
+						type="text"
+						class="
+							h-10
+							w-full
+							rounded
+							px-4
+							py-2
+							bg-bg_1
+						"
+					/>
+					<button
+			 	 	 @click="
+							store.categories.find(cat => cat.name === newCategory) ||
+							store.categories.push({ name: newCategory, hashtags: [] })
+						"
+						class="
+							h-10
+							flex-initial
+							rounded
+							px-4
+							py-2
+							bg-orange
+							text-bg_0
+							focus:bg-br_orange
+						"
+					>Add</button>
+
+				</div>
+
+				<div
+					x-data="{ newHashtag: '', categories: '', range: ''}"
+					class="
+						flex
+						flex-wrap
+						items-end
+						justify-end
+						gap-4
+						mt-8
+						mx-4
+				">
+
+					<input
+						x-model="newHashtag"
+						placeholder="...add hashtag"
+						type="text"
+						class="
+							h-10
+							flex-auto
+							rounded
+							px-4
+							py-2
+							bg-bg_1
+						"
+					/>
+
+					<select
+						x-model="range"
+						class="
+							h-10
+							flex-auto
+							rounded
+							px-4
+							py-2
+							bg-bg_1
+						"
+					>
+						<option></option>
+						<template x-for="range in store.ranges.map(range => range.name)">
+							<option x-text="range"></option>
+						</template>
+					</select>
+
+					<select
+						x-model="categories"
+						multiple
+						class="
+							flex-auto
+							rounded
+							px-4
+							py-2
+							bg-bg_1
+						"
+					>
+						<template x-for="categories in store.categories.map(cat => cat.name)">
+							<option x-text="categories"></option>
+						</template>
+					</select>
+
+					<button
+						class="
+							h-10
+							rounded
+							px-4
+							py-2
+							bg-orange
+							text-bg_0
+							focus:bg-br_orange
+						"
+					@click="
+						() => {
+							if (!categories || !range || !newHashtag) { return false; };
+
+							let id = parseInt(
+								Object.keys(store.hashtags).find(key => store.hashtags[key] === newHashtag)
+							);
+
+							// adding by removing first from cats and ranges
+							if (id) {
+								const removeEntry = entry => {
+										const idx = entry.hashtags.indexOf(id);
+										(idx >= 0) && entry.hashtags.splice(idx, 1);
+								};
+								store.categories.forEach(removeEntry);
+								store.ranges.forEach(removeEntry);
+							}
+
+							if (!id) {
+								// get highest/last inserted id and add new entry with it
+								const latest = Object.keys(store.hashtags).length > 0
+									? Object.keys(store.hashtags).reduce(
+											(a, b) => store.hashtags[a] > store.hashtags[b] ? a : b
+										)
+									: 0;
+								id = parseInt(latest) + 1;
+								store.hashtags[id] = newHashtag;
+							}
+
+							// add to categories
+							categories.forEach(category => {
+								store.categories.find(cat => cat.name === category).hashtags.push(id);
+							});
+
+							// and to range
+							store.ranges.find(rangeEntry => rangeEntry.name === range).hashtags.push(id);
+						}
+					">Add</button>
+
+				</div>
+
+				<button
+					aria-label="Close overlay"
+					@click="overlay = !overlay"
+					class="
+						absolute
+						left-4
+						bottom-4
+						z-0
+						w-12
+						h-12
+						rounded-full
+						bg-blue
+						text-bg_0
+						text-xl
+						transform
+						rotate-45
+					"
+				>+</button>
+
+			</section>
+
+		</main>
+
+		<script>
+
+			function hashtags(store) {
+
+				const selected = ['default'];
+
+				return {
+
+					hashtags: '',
+					category: '',
+
+					fetchHashtags() {
+
+						let categoryHashtagIds = [];
+
+						// populate selected categories
+						const index = selected.indexOf(this.category);
+
+						if (index === -1) {
+
+							selected.push(this.category);
+
+						} else {
+
+					 		selected.splice(index, 1);
+						}
+
+						// populate hashtags of selected categories
+						selected.forEach(selectedCategory => {
+
+							if (selectedCategory !== 'default') {
+
+								// merge non default category hashtags
+								categoryHashtagIds = [...categoryHashtagIds, ...store.categories.find(
+									category => category.name === selectedCategory
+								).hashtags];
+
+							}
+
+						});
+
+						// randomize the order
+						categoryHashtagIds.sort(() => Math.random() - 0.5);
+
+						// add default category hashtags, randomized
+						categoryHashtagIds = [...categoryHashtagIds, ...store.categories.find(
+							category => category.name === 'default'
+						).hashtags.sort(() => Math.random() -0.5)];
+
+						// remove dupes
+						categoryHashtagIds = categoryHashtagIds.filter(
+							(v, i) => categoryHashtagIds.indexOf(v) === i
+						);
+
+						// add by range value
+						const hashtagIdArray = [];
+
+						store.ranges.forEach(range => {
+
+							let breaker = 0;
+
+							for (let i = 0; i <= categoryHashtagIds.length; i++) {
+
+								if (range.hashtags.indexOf(categoryHashtagIds[i]) >= 0) {
+
+									hashtagIdArray.push(categoryHashtagIds[i]);
+									breaker++;
+
+								}
+
+								if (breaker >= range.amount - 1) {
+
+									break;
+
+								}
+
+							}
+
+						});
+
+						this.hashtags = '#' + hashtagIdArray.map((id) => store.hashtags[id]).join(' #');
+
+					}
+
+				};
+
+			}
+
+		</script>
+
+	</body>
+</html>

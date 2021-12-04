@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* light as standard theme*/
+:root {
+	--bg_0: #ffffff;
+	--bg_1: #ebebeb;
+	--bg_2: #cdcdcd;
+	--dim_0: #878787;
+	--fg_0: #474747;
+	--fg_1: #282828;
+
+	--red: #d6000c;
+	--green: #8ba915;
+	--yellow: #c49700;
+	--blue: #0064e4;
+	--magenta: #dd0f9d;
+	--cyan: #00ad9c;
+	--orange: #d04a00;
+	--violet: #7f51d6;
+
+	--br_red: #bf0000;
+	--br_green: #008400;
+	--br_yellow: #af8500;
+	--br_blue: #0054cf;
+	--br_magenta: #c7008b;
+	--br_cyan: #009a8a;
+	--br_orange: #ba3700;
+	--br_violet: #6b40c3;
+}
+
+.dark {
+	--bg_0: #181818;
+	--bg_1: #252525;
+	--bg_2: #3b3b3b;
+	--dim_0: #777777;
+	--fg_0: #b9b9b9;
+	--fg_1: #dedede;
+
+	--red: #ed4a46;
+	--green: #8ba915;
+	--yellow: #dbb32d;
+	--blue: #368aeb;
+	--magenta: #eb6eb7;
+	--cyan: #3fc5b7;
+	--orange: #e67f43;
+	--violet: #a580e2;
+
+	--br_red: #ff5e56;
+	--br_green: #83c746;
+	--br_yellow: #efc541;
+	--br_blue: #4f9cfe;
+	--br_magenta:#ff81ca;
+	--br_cyan: #56d8c9;
+	--br_orange: #fa9153;
+	--br_violet: #b891f5;
+}
