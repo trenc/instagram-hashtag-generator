@@ -166,7 +166,7 @@
 				</div>
 
 				<div
-					x-data="{ newHashtag: '', categories: '', range: ''}"
+			x-data="{ newHashtag: '', categories: '', range: '' }"
 					class="
 						flex
 						flex-wrap
@@ -234,44 +234,7 @@
 							text-bg_0
 							focus:bg-br_orange
 						"
-					@click="
-						() => {
-							if (!categories || !range || !newHashtag) { return false; };
-
-							let id = parseInt(
-								Object.keys(store.hashtags).find(key => store.hashtags[key] === newHashtag)
-							);
-
-							// adding by removing first from cats and ranges
-							if (id) {
-								const removeEntry = entry => {
-										const idx = entry.hashtags.indexOf(id);
-										(idx >= 0) && entry.hashtags.splice(idx, 1);
-								};
-								store.categories.forEach(removeEntry);
-								store.ranges.forEach(removeEntry);
-							}
-
-							if (!id) {
-								// get highest/last inserted id and add new entry with it
-								const latest = Object.keys(store.hashtags).length > 0
-									? Object.keys(store.hashtags).reduce(
-											(a, b) => store.hashtags[a] > store.hashtags[b] ? a : b
-										)
-									: 0;
-								id = parseInt(latest) + 1;
-								store.hashtags[id] = newHashtag;
-							}
-
-							// add to categories
-							categories.forEach(category => {
-								store.categories.find(cat => cat.name === category).hashtags.push(id);
-							});
-
-							// and to range
-							store.ranges.find(rangeEntry => rangeEntry.name === range).hashtags.push(id);
-						}
-					">Add</button>
+			@click="addHashtag()">Add</button>
 
 				</div>
 
@@ -299,6 +262,7 @@
 		</main>
 
 		<script>
+
 
 			function hashtags(store) {
 
@@ -331,9 +295,11 @@
 							if (selectedCategory !== 'default') {
 
 								// merge non default category hashtags
-								categoryHashtagIds = [...categoryHashtagIds, ...store.categories.find(
-									category => category.name === selectedCategory
-								).hashtags];
+								categoryHashtagIds = [
+									...categoryHashtagIds,
+									...store.categories.
+										find(category => category.name === selectedCategory).hashtags
+								];
 
 							}
 
@@ -343,9 +309,12 @@
 						categoryHashtagIds.sort(() => Math.random() - 0.5);
 
 						// add default category hashtags, randomized
-						categoryHashtagIds = [...categoryHashtagIds, ...store.categories.find(
-							category => category.name === 'default'
-						).hashtags.sort(() => Math.random() -0.5)];
+						categoryHashtagIds = [
+							...categoryHashtagIds,
+							...store.categories.
+								find(category => category.name === 'default').hashtags.
+									sort(() => Math.random() -0.5)
+						];
 
 						// remove dupes
 						categoryHashtagIds = categoryHashtagIds.filter(
@@ -380,6 +349,44 @@
 
 						this.hashtags = '#' + hashtagIdArray.map((id) => store.hashtags[id]).join(' #');
 
+					},
+
+					addHashtag() {
+
+						if (!this.categories || !this.range || !this.newHashtag) { return false; };
+
+						let id = parseInt(
+							Object.keys(store.hashtags).find(key => store.hashtags[key] === this.newHashtag)
+						);
+
+						// adding by removing first from cats and ranges
+						if (id) {
+							const removeEntry = entry => {
+								const idx = entry.hashtags.indexOf(id);
+								(idx >= 0) && entry.hashtags.splice(idx, 1);
+							};
+							store.categories.forEach(removeEntry);
+							store.ranges.forEach(removeEntry);
+						}
+
+						if (!id) {
+							// get highest/last inserted id and add new entry with it
+							const latest = Object.keys(store.hashtags).length > 0
+								? Object.keys(store.hashtags).reduce(
+									(a, b) => store.hashtags[a] > store.hashtags[b] ? a : b
+								)
+								: 0;
+							id = parseInt(latest) + 1;
+							store.hashtags[id] = this.newHashtag;
+						}
+
+						// add to categories
+						this.categories.forEach(category => {
+							store.categories.find(cat => cat.name === category).hashtags.push(id);
+						});
+
+						// and to range
+						store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
 					}
 
 				};
