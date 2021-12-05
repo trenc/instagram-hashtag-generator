@@ -2,14 +2,14 @@
   "name": "instagram-hashtag-generator",
   "version": "0.1.0",
   "description": "",
+  "author": "Tommy Schmucker",
+  "license": "AGPL",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tw:dev": "npx tailwindcss -i ./src/css/tailwind.css -o ./www/assets/css/style.css",
-    "tw:prod": "NODE_ENV=production npx tailwindcss -i ./src/css/tailwind.css -o ./www/assets/css/style.min.css --minify"
+    "tw:dev": "npx tailwindcss -i ./src/assets/css/tailwind.css -o ./src/assets/css/style.css",
+    "tw:prod": "npx tailwindcss -i ./src/assets/css/tailwind.css -o ./dist/assets/css/style.min.css --minify"
   },
-  "author": "Tommy Schmucker",
-  "license": "AGPL",
   "devDependencies": {
     "tailwindcss": "latest"
   },
