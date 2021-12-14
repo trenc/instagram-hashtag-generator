@@ -19,6 +19,7 @@
 	<body x-data="
 		{
 			overlay: false,
+			toast: { isVisible: false, isSuccess: false, message: 'error' },
 			store: $persist({
 				categories: [ { name: 'default', hashtags: [] } ],
 				hashtags: {},
@@ -107,6 +108,7 @@
 				@click="
 					document.querySelector('#toCopy').select();
 					document.execCommand('copy');
+					success('Hashtags copied');
 				"
 			>Copy to Clipboard</label>
 
@@ -153,10 +155,7 @@
 						"
 					/>
 					<button
-			 	 	 @click="
-							store.categories.find(cat => cat.name === newCategory) ||
-							store.categories.push({ name: newCategory, hashtags: [] })
-						"
+			 	 	 @click="addCategory"
 						class="
 							h-10
 							flex-initial
@@ -172,7 +171,7 @@
 				</div>
 
 				<div
-			x-data="{ newHashtag: '', categories: '', range: '' }"
+					x-data="{ newHashtag: '', categories: '', range: '' }"
 					class="
 						flex
 						flex-wrap
@@ -267,6 +266,29 @@
 
 		</main>
 
+		<div
+			x-data
+			x-show="toast.isVisible"
+			class="
+				p-2
+				rounded
+				fixed
+				bottom-4
+				right-4
+				transform-gpu
+				transition-transform
+				duration-400
+				ease
+			"
+			:class="toast.isSuccess ? 'bg-green' : 'bg-red'"
+			x-transition:enter-start="translate-y-full"
+			x-transition:enter-end="translate-y-0"
+			x-transition:leave-start="translate-y-0"
+			x-transition:leave-end="translate-y-full"
+    >
+			<p class="text-sm text-bg_0" x-text="toast.message"></p>
+		</div>
+
 		<script>
 
 			function hashtags(store) {
@@ -356,9 +378,35 @@
 
 					},
 
+					addCategory() {
+
+						if (!this.newCategory) {
+							this.error('Category is missing');
+							return false;
+						}
+
+						store.categories.find(cat => cat.name === this.newCategory) ||
+						store.categories.push({ name: this.newCategory, hashtags: [] })
+
+						this.newCategory = '';
+						this.success('Category added')
+
+					},
+
 					addHashtag() {
 
-						if (!this.categories || !this.range || !this.newHashtag) {
+						if (!this.newHashtag) {
+							this.error('Hashtag is missing');
+							return false;
+						};
+
+						if (!this.range) {
+							this.error('Range is missing');
+							return false;
+						};
+
+						if (!this.categories) {
+							this.error('Category is missing');
 							return false;
 						};
 
@@ -394,7 +442,35 @@
 
 						// and to range
 						store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
+
+						this.newHashtag = '';
+						this.success('Hashtag added');
+
+					},
+
+					error(message) {
+
+						this.notify(message, false);
+
+					},
+
+					success(message) {
+
+						this.notify(message, true);
+
+					},
+
+					notify(message, success = false) {
+
+						this.toast.message = message;
+						this.toast.isSuccess = success;
+						this.toast.isVisible = true;
+
+						setTimeout(() => {
+							this.toast.isVisible = !this.toast.isVisible;
+						}, 3000);
 					}
+
 
 				};
 
