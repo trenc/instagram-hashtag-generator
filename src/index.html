@@ -41,8 +41,7 @@
 
 		<main x-data="hashtags(store)" class="
 			absolute
-			inset-x-0
-			inset-y-8
+			inset-4
 			max-w-3xl
 			mx-auto
 		">
@@ -53,7 +52,7 @@
 					flex-wrap
 					justify-center
 					gap-4
-					mb-8
+					mb-4
 				"
 			>
 			<template x-for="
@@ -108,7 +107,7 @@
 				@click="
 					document.querySelector('#toCopy').select();
 					document.execCommand('copy');
-					success('Hashtags copied');
+					success('hashtags copied');
 				"
 			>Copy to Clipboard</label>
 
@@ -117,8 +116,8 @@
 				@click="overlay = !overlay"
 				class="
 					absolute
-					left-4
-					bottom-4
+					left-0
+					bottom-0
 					z-0
 					w-12
 					h-12
@@ -139,7 +138,9 @@
 				"
 			>
 
-				<div class="flex gap-4 m-4" x-data="{ newCategory: '' }">
+				<p class="block mb-4" >Add a category:</p>
+
+				<div class="flex gap-4 mb-8" x-data="{ newCategory: '' }">
 
 					<input
 						x-model="newCategory"
@@ -170,6 +171,8 @@
 
 				</div>
 
+				<p class="block mb-4" >Add a hashtag to categories:</p>
+
 				<div
 					x-data="{ newHashtag: '', categories: '', range: '' }"
 					class="
@@ -178,8 +181,6 @@
 						items-end
 						justify-end
 						gap-4
-						mt-8
-						mx-4
 				">
 
 					<input
@@ -230,6 +231,7 @@
 					</select>
 
 					<button
+						@click="addHashtag()"
 						class="
 							h-10
 							rounded
@@ -239,7 +241,7 @@
 							text-bg_0
 							focus:bg-br_orange
 						"
-			@click="addHashtag()">Add</button>
+					>Add</button>
 
 				</div>
 
@@ -248,8 +250,8 @@
 					@click="overlay = !overlay"
 					class="
 						absolute
-						left-4
-						bottom-4
+						left-0
+						bottom-0
 						z-0
 						w-12
 						h-12
@@ -275,6 +277,7 @@
 				fixed
 				bottom-4
 				right-4
+				z-50
 				transform-gpu
 				transition-transform
 				duration-400
@@ -381,7 +384,7 @@
 					addCategory() {
 
 						if (!this.newCategory) {
-							this.error('Category is missing');
+							this.error('category is missing');
 							return false;
 						}
 
@@ -389,14 +392,14 @@
 						store.categories.push({ name: this.newCategory, hashtags: [] })
 
 						this.newCategory = '';
-						this.success('Category added')
+						this.success('category added')
 
 					},
 
 					addHashtag() {
 
 						if (!this.newHashtag) {
-							this.error('Hashtag is missing');
+							this.error('hashtag is missing');
 							return false;
 						};
 
@@ -406,7 +409,7 @@
 						};
 
 						if (!this.categories) {
-							this.error('Category is missing');
+							this.error('category is missing');
 							return false;
 						};
 
@@ -444,7 +447,7 @@
 						store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
 
 						this.newHashtag = '';
-						this.success('Hashtag added');
+						this.success('hashtag added');
 
 					},
 
@@ -467,7 +470,7 @@
 						this.toast.isVisible = true;
 
 						setTimeout(() => {
-							this.toast.isVisible = !this.toast.isVisible;
+							this.toast.isVisible = false;
 						}, 3000);
 					}
 
