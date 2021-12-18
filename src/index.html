@@ -18,7 +18,7 @@
 	</head>
 	<body x-data="
 		{
-			overlay: false,
+			openTab: 1,
 			toast: { isVisible: false, isSuccess: false, message: 'error' },
 			store: $persist({
 				categories: [ { name: 'default', hashtags: [] } ],
@@ -37,6 +37,7 @@
 			tracking-normal
 			bg-bg_0
 			text-fg_0
+			h-screen
 	">
 
 		<main x-data="hashtags(store)" class="
@@ -46,97 +47,76 @@
 			mx-auto
 		">
 
-			<div
-				class="
-					flex
-					flex-wrap
-					justify-center
-					gap-4
-					mb-4
-				"
-			>
-			<template x-for="
-				category in store.categories.map(cat => cat.name).
-				filter(cat => cat !== 'default')
-			">
-					<button
-						:aria-label="category"
-						class="
-							flex-initial
-							rounded
-							px-4
-							py-2
-						"
-						x-text="category"
-						x-data="{ toggle: false }"
-						:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
-						@click="toggle = !toggle; fetchHashtags()"
-					></button>
-				</template>
-			</div>
+			<section x-show="openTab === 1">
 
-			<textarea
-				x-text="hashtags"
-				readonly
-				id="toCopy"
-				class="
-					w-full
-					sm:h-40
-					h-80
-					bg-bg_1
-					rounded
-					p-4
-					mb-4
-				"
-			></textarea>
+				<div
+					class="
+						flex
+						flex-wrap
+						justify-center
+						gap-4
+						mb-4
+					"
+				>
+				<template x-for="
+					category in store.categories.map(cat => cat.name).
+					filter(cat => cat !== 'default')
+				">
+						<button
+							:aria-label="category"
+							class="
+								flex-initial
+								rounded
+								px-4
+								py-2
+							"
+							x-text="category"
+							x-data="{ toggle: false }"
+							:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+							@click="toggle = !toggle; fetchHashtags()"
+						></button>
+					</template>
+				</div>
 
-			<label
-				for="toCopy"
-				class="
-					cursor-pointer
-					float-right
-					rounded
-					px-4
-					py-2
-					mb-4
-					bg-orange
-					text-bg_0
-					focus:bg-br_orange
-				"
-				x-data
-				@click="
-					document.querySelector('#toCopy').select();
-					document.execCommand('copy');
-					success('hashtags copied');
-				"
-			>Copy to Clipboard</label>
+				<textarea
+					x-text="hashtags"
+					readonly
+					id="toCopy"
+					class="
+						w-full
+						sm:h-40
+						h-80
+						bg-bg_1
+						rounded
+						p-4
+						mb-4
+					"
+				></textarea>
 
-			<button
-				aria-label="Open overlay"
-				@click="overlay = !overlay"
-				class="
-					absolute
-					left-0
-					bottom-0
-					z-0
-					w-12
-					h-12
-					rounded-full
-					bg-blue
-					text-bg_0
-					text-xl
-				"
-			>+</button>
+				<label
+					for="toCopy"
+					class="
+						cursor-pointer
+						float-right
+						rounded
+						px-4
+						py-2
+						mb-4
+						bg-orange
+						text-bg_0
+						focus:bg-br_orange
+					"
+					x-data
+					@click="
+						document.querySelector('#toCopy').select();
+						document.execCommand('copy');
+						success('hashtags copied');
+					"
+				>Copy to Clipboard</label>
 
-			<section
-				x-show="overlay"
-				class="
-					absolute
-					inset-0
-					z-10
-					bg-bg_0
-				"
-			>
+			</section>
+
+			<section x-show="openTab === 2">
 
 				<p class="block mb-4" >Add a category:</p>
 
@@ -245,37 +225,134 @@
 
 				</div>
 
-				<button
-					aria-label="Close overlay"
-					@click="overlay = !overlay"
-					class="
-						absolute
-						left-0
-						bottom-0
-						z-0
-						w-12
-						h-12
-						rounded-full
-						bg-blue
-						text-bg_0
-						text-xl
-						transform
-						rotate-45
-					"
-				>+</button>
+			</section>
+
+			<section x-show="openTab === 4">
+
+				<div x-data="{ files: null }">
+
+					<p class="block mb-4" >Backup your hashtags and categories:</p>
+
+					<button
+						@click="backup()"
+						class="
+							h-10
+							rounded
+							px-4
+							py-2
+							bg-orange
+							text-bg_0
+							focus:bg-br_orange
+						"
+					>Backup</button>
+
+					<p class="block mt-8 mb-4" >Import your backup:</p>
+
+					<label
+						class="
+							border
+							py-2
+							px-4
+							rounded
+							cursor-pointer
+							inline-block
+							mb-4
+					">
+						<input
+							type="file"
+							class="sr-only"
+							x-on:change="files = Object.values($event.target.files)"
+						>
+						<span x-text="
+							files ? files.map(file => file.name).join(', ') : 'Select file to be restored...'
+						"></span>
+					</label>
+
+					<button
+						@click="restore()"
+						class="
+							h-10
+							rounded
+							px-4
+							py-2
+							bg-orange
+							text-bg_0
+							focus:bg-br_orange
+						"
+					>Restore</button>
+
+				</div>
 
 			</section>
 
 		</main>
 
+		<div class="
+			fixed
+			flex
+			bottom-0
+			z-0
+			w-full
+			justify-center
+		">
+			<button
+				@click="openTab = 1"
+				:class="openTab === 1 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+				class="
+					flex-1
+					px-4
+					py-2
+					border
+					border-bg_2
+					rounded
+				">Get</button>
+			<button
+				@click="openTab = 2"
+				:class="openTab === 2 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+				class="
+					flex-1
+					px-4
+					py-2
+					border
+					border-bg_2
+					rounded
+				">Add</button>
+			<!-- <button -->
+			<!-- 	@click="openTab = 3" -->
+			<!-- 	:class="openTab === 3 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'" -->
+			<!-- 	class=" -->
+			<!-- 		flex-1 -->
+			<!-- 		px-4 -->
+			<!-- 		py-2 -->
+			<!-- 		border -->
+			<!-- 		border-bg_2 -->
+			<!-- 		rounded -->
+			<!-- 	">List</button> -->
+			<button
+				@click="openTab = 4"
+				:class="openTab === 4 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+				class="
+					flex-1
+					px-4
+					py-2
+					border
+					border-bg_2
+					rounded
+				">Backup</button>
+		</div>
+
+
+			</div>
+
 		<div
 			x-data
 			x-show="toast.isVisible"
 			class="
-				p-2
+				px-4
+				py-2
 				rounded
 				fixed
-				bottom-4
+				bottom-16
 				right-4
 				z-50
 				transform-gpu
@@ -284,12 +361,12 @@
 				ease
 			"
 			:class="toast.isSuccess ? 'bg-green' : 'bg-red'"
-			x-transition:enter-start="translate-y-full"
+			x-transition:enter-start="translate-y-24"
 			x-transition:enter-end="translate-y-0"
 			x-transition:leave-start="translate-y-0"
-			x-transition:leave-end="translate-y-full"
+			x-transition:leave-end="translate-y-24"
     >
-			<p class="text-sm text-bg_0" x-text="toast.message"></p>
+			<p class="text-bg_0" x-text="toast.message"></p>
 		</div>
 
 		<script>
@@ -451,6 +528,62 @@
 
 					},
 
+					restore() {
+
+						if (!this.files || this.files.length < 1) {
+							this.error('no file selected');
+							return false;
+						}
+
+						const reader = new FileReader();
+						reader.readAsText(this.files[0]);
+
+						reader.onload = () => {
+
+							if (!reader.result) {
+								this.error('could not read file');
+								return false;
+							}
+
+							let data = null;
+							try {
+								data = JSON.parse(reader.result);
+							} catch(e) {
+								this.error('wrong file');
+								return false;
+							}
+
+							if (!data.categories || !data.hashtags || !data.ranges) {
+								this.error('wrong file');
+								return false;
+							}
+
+							store.categories = data.categories;
+							store.hashtags = data.hashtags;
+							store.ranges = data.ranges;
+
+							this.files = null;
+							this.success('backup restored');
+
+						}
+
+					},
+
+					backup() {
+
+						const today = new Date();
+						const todayConverted = today.getFullYear()
+							+ '-' + (today.getMonth() +1 )
+							+ '-' + today.getDate();
+
+						downloadString(
+							JSON.stringify(store),
+							'instagram-hashtags-' + todayConverted + '.json',
+							'application/json'
+						);
+
+					},
+
 					error(message) {
 
 						this.notify(message, false);
@@ -476,6 +609,21 @@
 
 
 				};
+
+			}
+
+			function downloadString(fileContent, fileName, fileType) {
+
+				const el = document.createElement('a');
+				el.setAttribute(
+					'href',
+					'data:' + fileType + ';charset=utf-8,' + encodeURIComponent(fileContent)
+				);
+				el.setAttribute('download', fileName);
+				el.style.display = 'none';
+				document.body.appendChild(el);
+				el.click();
+				document.body.removeChild(el);
 
 			}
 
