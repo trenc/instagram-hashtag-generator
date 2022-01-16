@@ -227,6 +227,101 @@
 
 			</section>
 
+			<section x-show="openTab === 3">
+
+				<div x-data="{
+					selectedCategories: [],
+					selectedRanges: [],
+					resultingHashtagsIds: [],
+					resultingHashtags: []
+				}">
+
+					<p class="block mb-4" >Show hashtag in categeory&hellip;</p>
+
+					<ul class="
+						flex
+						overflow-x-scroll
+						hide-scroll-bar
+						gap-4
+						mb-8
+					">
+						<template x-for="category in store.categories.map(cat => cat.name)">
+							<li>
+								<button
+									x-data="{ toggle: false }"
+									x-text="category"
+									:aria-label="category"
+									:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+									@click="toggle = !toggle; getHashtags()"
+								class="
+									flex-initial
+									rounded
+									px-4
+									py-2
+								"></button>
+							</li>
+						</template>
+					</ul>
+
+					<p class="block mb-4" >&hellip;and in range:</p>
+
+					<ul class="
+						flex
+						overflow-x-scroll
+						hide-scroll-bar
+						gap-4
+						mb-8
+					">
+						<template x-for="range in store.ranges.map(range => range.name)">
+							<li>
+								<button
+									x-data="{ toggle: false }"
+									x-text="range"
+									:aria-label="range"
+									:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+									@click="toggle = !toggle; getHashtags()"
+								class="
+									flex-initial
+									rounded
+									px-4
+									py-2
+								"></button>
+							</li>
+						</template>
+					</ul>
+
+					<p class="block mb-4" >Resulting hashtags:</p>
+
+					<div
+						class="
+							flex
+							flex-wrap
+							justify-center
+							gap-4
+							mb-4
+						"
+					>
+					<template x-for="resultingHashtag in resultingHashtags">
+							<button
+								:aria-label="resultingHashtag"
+								class="
+									flex-initial
+									rounded
+									px-4
+									py-2
+								"
+								x-text="resultingHashtag"
+								x-data="{ toggle: false }"
+								:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+								@click="toggle = !toggle;"
+							></button>
+						</template>
+					</div>
+
+				</div>
+
+			</section>
+
 			<section x-show="openTab === 4">
 
 				<div x-data="{ files: null }">
