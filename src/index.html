@@ -481,13 +481,9 @@
 
 						// populate selected categories
 						const index = selected.indexOf(this.category);
-
 						if (index === -1) {
-
 							selected.push(this.category);
-
 						} else {
-
 					 		selected.splice(index, 1);
 						}
 
@@ -620,6 +616,94 @@
 
 						this.newHashtag = '';
 						this.success('hashtag added');
+
+					},
+
+					getHashtags() {
+
+						let categoryHashtagIds = [];
+						let rangeHashtagIds = [];
+						this.resultingHashtagsIds.length = 0;
+						this.resultingHashtags.length = 0;
+
+						// populate selected categories
+						const catIndex = this.selectedCategories.indexOf(this.category);
+						if (catIndex === -1) {
+							this.selectedCategories.push(this.category);
+						} else {
+					 		this.selectedCategories.splice(catIndex, 1);
+						}
+
+						// populate selected ranges
+						const rangeIndex = this.selectedRanges.indexOf(this.range);
+						if (rangeIndex === -1) {
+							this.selectedRanges.push(this.range);
+						} else {
+					 		this.selectedRanges.splice(rangeIndex, 1);
+						}
+
+						// ToDo:
+						// category population don't work when selecting and deselecting
+						// populate hashtags of selected categories
+						this.selectedCategories.forEach(selectedCategory => {
+
+							store.categories.forEach((category) => {
+
+								if (category.name === selectedCategory) {
+
+									categoryHashtagIds = [
+										...categoryHashtagIds,
+										...category.hashtags
+									];
+
+								}
+
+							});
+
+						});
+
+						// populate hashtags of selected ranges
+				//		this.selectedRanges.forEach(selectedRange => {
+
+				//			store.ranges.forEach((range, idx) => {
+
+				//				if (range.name === selectedRange) {
+
+				//					rangeHashtagIds = [
+				//						...rangeHashtagIds,
+				//						...store.ranges[idx].hashtags
+				//					];
+
+				//				}
+
+				//			});
+
+				//		});
+
+							if (rangeHashtagIds.length > 0 && categoryHashtagIds > 0) {
+
+								this.resultingHashtagsIds = categoryHashtagIds.filter(
+									id => rangeHashtagIds.includes(id)
+								);
+
+							} else if (rangeHashtagIds.length === 0) {
+
+								this.resultingHashtagsIds = [...categoryHashtagIds];
+
+							} else if (categoryHashtagIds.length === 0 ) {
+
+								this.resultingHashtagsIds = [...rangeHashtagIds];
+
+							}
+
+						// remove dupes
+						this.resultingHashtagsIds = this.resultingHashtagsIds.filter(
+							(v, i) => this.resultingHashtagsIds.indexOf(v) === i
+						);
+
+						this.resultingHashtagsIds.map((id) => {
+							this.resultingHashtags.push('#' + store.hashtags[id]);
+						});
 
 					},
 
