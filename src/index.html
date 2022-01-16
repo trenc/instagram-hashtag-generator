@@ -16,22 +16,7 @@
 			}
 		</script>
 	</head>
-	<body x-data="
-		{
-			openTab: 1,
-			toast: { isVisible: false, isSuccess: false, message: 'error' },
-			store: $persist({
-				categories: [ { name: 'default', hashtags: [] } ],
-				hashtags: {},
-				ranges: [
-					{ name: '0-50k', amount: 14, hashtags: [] },
-					{ name: '50k-100k', amount: 9, hashtags: [] },
-					{ name: '100k-1m', amount: 5, hashtags: [] },
-					{ name: '> 1m', amount: 2, hashtags: [] }
-				]
-			})
-		}
-	" class="
+	<body x-data="InstagramHashtagGenerator" class="
 			font-sans
 			leading-normal
 			tracking-normal
@@ -40,7 +25,7 @@
 			h-screen
 	">
 
-		<main x-data="hashtags(store)" class="
+		<main class="
 			absolute
 			inset-4
 			max-w-3xl
@@ -466,7 +451,7 @@
 
 		<script>
 
-			function hashtags(store) {
+			function InstagramHashtagGenerator() {
 
 				const selected = ['default'];
 
@@ -474,6 +459,19 @@
 
 					hashtags: '',
 					category: '',
+
+					openTab: 1,
+					toast: { isVisible: false, isSuccess: false, message: 'error' },
+					store: this.$persist({
+						categories: [ { name: 'default', hashtags: [] } ],
+						hashtags: {},
+						ranges: [
+							{ name: '0-50k', amount: 14, hashtags: [] },
+							{ name: '50k-100k', amount: 9, hashtags: [] },
+							{ name: '100k-1m', amount: 5, hashtags: [] },
+							{ name: '> 1m', amount: 2, hashtags: [] }
+						]
+					}),
 
 					fetchHashtags() {
 
@@ -495,7 +493,7 @@
 								// merge non default category hashtags
 								categoryHashtagIds = [
 									...categoryHashtagIds,
-									...store.categories.
+									...this.store.categories.
 										find(category => category.name === selectedCategory).hashtags
 								];
 
@@ -509,7 +507,7 @@
 						// add default category hashtags, randomized
 						categoryHashtagIds = [
 							...categoryHashtagIds,
-							...store.categories.
+							...this.store.categories.
 								find(category => category.name === 'default').hashtags.
 									sort(() => Math.random() -0.5)
 						];
@@ -522,7 +520,7 @@
 						// add by range value
 						const hashtagIdArray = [];
 
-						store.ranges.forEach(range => {
+						this.store.ranges.forEach(range => {
 
 							let breaker = 0;
 
@@ -545,7 +543,7 @@
 
 						});
 
-						this.hashtags = '#' + hashtagIdArray.map((id) => store.hashtags[id]).join(' #');
+						this.hashtags = '#' + hashtagIdArray.map((id) => this.store.hashtags[id]).join(' #');
 
 					},
 
@@ -556,8 +554,8 @@
 							return false;
 						}
 
-						store.categories.find(cat => cat.name === this.newCategory) ||
-						store.categories.push({ name: this.newCategory, hashtags: [] })
+						this.store.categories.find(cat => cat.name === this.newCategory) ||
+						this.store.categories.push({ name: this.newCategory, hashtags: [] })
 
 						this.newCategory = '';
 						this.success('category added')
@@ -582,7 +580,9 @@
 						};
 
 						let id = parseInt(
-							Object.keys(store.hashtags).find(key => store.hashtags[key] === this.newHashtag)
+							Object.keys(this.store.hashtags).find(
+								key => this.store.hashtags[key] === this.newHashtag
+							)
 						);
 
 						// adding by removing first from cats and ranges
@@ -591,28 +591,28 @@
 								const idx = entry.hashtags.indexOf(id);
 								(idx >= 0) && entry.hashtags.splice(idx, 1);
 							};
-							store.categories.forEach(removeEntry);
-							store.ranges.forEach(removeEntry);
+							this.store.categories.forEach(removeEntry);
+							this.store.ranges.forEach(removeEntry);
 						}
 
 						if (!id) {
 							// get highest/last inserted id and add new entry with it
-							const latest = Object.keys(store.hashtags).length > 0
-								? Object.keys(store.hashtags).reduce(
-										(a, b) => store.hashtags[a] > store.hashtags[b] ? a : b
+							const latest = Object.keys(this.store.hashtags).length > 0
+								? Object.keys(this.store.hashtags).reduce(
+										(a, b) => this.store.hashtags[a] > this.store.hashtags[b] ? a : b
 									)
 								: 0;
 							id = parseInt(latest) + 1;
-							store.hashtags[id] = this.newHashtag;
+							this.store.hashtags[id] = this.newHashtag;
 						}
 
 						// add to categories
 						this.categories.forEach(category => {
-							store.categories.find(cat => cat.name === category).hashtags.push(id);
+							this.store.categories.find(cat => cat.name === category).hashtags.push(id);
 						});
 
 						// and to range
-						store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
+						this.store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
 
 						this.newHashtag = '';
 						this.success('hashtag added');
@@ -647,7 +647,7 @@
 						// populate hashtags of selected categories
 						this.selectedCategories.forEach(selectedCategory => {
 
-							store.categories.forEach((category) => {
+							this.store.categories.forEach((category) => {
 
 								if (category.name === selectedCategory) {
 
@@ -665,13 +665,13 @@
 						// populate hashtags of selected ranges
 				//		this.selectedRanges.forEach(selectedRange => {
 
-				//			store.ranges.forEach((range, idx) => {
+				//			this.store.ranges.forEach((range, idx) => {
 
 				//				if (range.name === selectedRange) {
 
 				//					rangeHashtagIds = [
 				//						...rangeHashtagIds,
-				//						...store.ranges[idx].hashtags
+				//						...this.store.ranges[idx].hashtags
 				//					];
 
 				//				}
@@ -702,7 +702,7 @@
 						);
 
 						this.resultingHashtagsIds.map((id) => {
-							this.resultingHashtags.push('#' + store.hashtags[id]);
+							this.resultingHashtags.push('#' + this.store.hashtags[id]);
 						});
 
 					},
@@ -737,9 +737,9 @@
 								return false;
 							}
 
-							store.categories = data.categories;
-							store.hashtags = data.hashtags;
-							store.ranges = data.ranges;
+							this.store.categories = data.categories;
+							this.store.hashtags = data.hashtags;
+							this.store.ranges = data.ranges;
 
 							this.files = null;
 							this.success('backup restored');
@@ -756,7 +756,7 @@
 							+ '-' + today.getDate();
 
 						downloadString(
-							JSON.stringify(store),
+							JSON.stringify(this.store),
 							'instagram-hashtags-' + todayConverted + '.json',
 							'application/json'
 						);
