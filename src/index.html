@@ -216,7 +216,7 @@
 
 				<div x-data="{
 					resultingHashtagsIds: [],
-					resultingHashtags: []
+					resultingHashtags: getHashtags()
 				}">
 
 					<p class="block mb-4">Show hashtags in categeory&hellip;</p>
@@ -645,6 +645,8 @@
 						this.resultingHashtagsIds.map((id) => {
 							this.resultingHashtags.push('#' + this.store.hashtags[id]);
 						});
+
+						return this.resultingHashtags;
 
 					},
 
