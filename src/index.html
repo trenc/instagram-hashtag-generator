@@ -215,8 +215,6 @@
 			<section x-show="openTab === 3">
 
 				<div x-data="{
-					selectedCategories: [],
-					selectedRanges: [],
 					resultingHashtagsIds: [],
 					resultingHashtags: []
 				}">
@@ -233,11 +231,10 @@
 						<template x-for="category in store.categories.map(cat => cat.name)">
 							<li>
 								<button
-									x-data="{ toggle: false }"
 									x-text="category"
 									:aria-label="category"
-									:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
-									@click="toggle = !toggle; getHashtags()"
+									:class="listCatBtn === category ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+									@click="listCatBtn = category; getHashtags()"
 								class="
 									flex-initial
 									rounded
@@ -260,11 +257,10 @@
 						<template x-for="range in store.ranges.map(range => range.name)">
 							<li>
 								<button
-									x-data="{ toggle: false }"
 									x-text="range"
 									:aria-label="range"
-									:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
-									@click="toggle = !toggle; getHashtags()"
+									:class="listRangeBtn === range ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
+									@click="listRangeBtn = range; getHashtags()"
 								class="
 									flex-initial
 									rounded
@@ -459,8 +455,9 @@
 
 					hashtags: '',
 					category: '',
-
 					openTab: 1,
+					listCatBtn: 'default',
+					listRangeBtn: '0-50k',
 					toast: { isVisible: false, isSuccess: false, message: 'error' },
 					store: this.$persist({
 						categories: [ { name: 'default', hashtags: [] } ],
@@ -623,83 +620,27 @@
 
 						let categoryHashtagIds = [];
 						let rangeHashtagIds = [];
-						this.resultingHashtagsIds.length = 0;
-						this.resultingHashtags.length = 0;
-
-						// populate selected categories
-						const catIndex = this.selectedCategories.indexOf(this.category);
-						if (catIndex === -1) {
-							this.selectedCategories.push(this.category);
-						} else {
-					 		this.selectedCategories.splice(catIndex, 1);
-						}
-
-						// populate selected ranges
-						const rangeIndex = this.selectedRanges.indexOf(this.range);
-						if (rangeIndex === -1) {
-							this.selectedRanges.push(this.range);
-						} else {
-					 		this.selectedRanges.splice(rangeIndex, 1);
-						}
-
-						// ToDo:
-						// category population don't work when selecting and deselecting
-						// populate hashtags of selected categories
-						this.selectedCategories.forEach(selectedCategory => {
+						this.resultingHashtagsIds = [];
+						this.resultingHashtags = [];
 
 							this.store.categories.forEach((category) => {
 
-								if (category.name === selectedCategory) {
-
-									categoryHashtagIds = [
-										...categoryHashtagIds,
-										...category.hashtags
-									];
-
+								if (category.name === this.listCatBtn) {
+									categoryHashtagIds = [...category.hashtags];
 								}
 
 							});
 
-						});
+							this.store.ranges.forEach((range) => {
+								if (range.name === this.listRangeBtn) {
+									rangeHashtagIds = [...range.hashtags];
+								}
 
-						// populate hashtags of selected ranges
-				//		this.selectedRanges.forEach(selectedRange => {
+							});
 
-				//			this.store.ranges.forEach((range, idx) => {
-
-				//				if (range.name === selectedRange) {
-
-				//					rangeHashtagIds = [
-				//						...rangeHashtagIds,
-				//						...this.store.ranges[idx].hashtags
-				//					];
-
-				//				}
-
-				//			});
-
-				//		});
-
-							if (rangeHashtagIds.length > 0 && categoryHashtagIds > 0) {
-
-								this.resultingHashtagsIds = categoryHashtagIds.filter(
-									id => rangeHashtagIds.includes(id)
-								);
-
-							} else if (rangeHashtagIds.length === 0) {
-
-								this.resultingHashtagsIds = [...categoryHashtagIds];
-
-							} else if (categoryHashtagIds.length === 0 ) {
-
-								this.resultingHashtagsIds = [...rangeHashtagIds];
-
-							}
-
-						// remove dupes
-						this.resultingHashtagsIds = this.resultingHashtagsIds.filter(
-							(v, i) => this.resultingHashtagsIds.indexOf(v) === i
-						);
+							this.resultingHashtagsIds = categoryHashtagIds.filter(
+								id => rangeHashtagIds.includes(id)
+							);
 
 						this.resultingHashtagsIds.map((id) => {
 							this.resultingHashtags.push('#' + this.store.hashtags[id]);
