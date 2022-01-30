@@ -9,9 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "serve src",
     "clean": "rm -fR dist && mkdir dist",
-    "tw:dev": "npx tailwindcss -i ./src/assets/css/tailwind.css -o ./src/assets/css/style.css",
-    "tw:prod": "NODE_ENV=production npx tailwindcss -i ./src/assets/css/tailwind.css -o ./dist/assets/css/style.min.css --minify",
-    "build": "npm run clean && npm run copy && npm run minify && npm run replace && npm run tw:prod",
+    "css": "NODE_ENV=production npx tailwindcss -i ./src/assets/css/tailwind.css -o ./dist/assets/css/style.min.css --minify",
+    "build": "npm run clean && npm run copy && npm run minify && npm run replace && npm run css",
     "copy": "mkdir ./dist/assets && cp -r ./src/assets/js ./dist/assets/js",
     "minify": "npx minhtml ./src/index.html --minify-js --collapse-whitespace -o ./dist/index.html",
     "replace": "PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && sed -i \"s/style.css/style.min.css?v=$PACKAGE_VERSION/\" ./dist/index.html"
@@ -19,6 +18,6 @@
   "devDependencies": {
     "minhtml": "^0.7.0",
     "serve": "^13.0.2",
-    "tailwindcss": "latest"
+    "tailwindcss": "^3.0.18"
   }
 }
