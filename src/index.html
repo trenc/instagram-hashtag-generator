@@ -43,6 +43,16 @@
 						mb-4
 					"
 				>
+					<button aria-label="default"
+						class="
+							flex-initial
+							rounded
+							px-4
+							py-2
+							text-bg_0
+							bg-blue
+							cursor-not-allowed
+						">default</button>
 				<template x-for="
 					category in store.categories.map(cat => cat.name).
 					filter(cat => cat !== 'default')
@@ -65,6 +75,7 @@
 
 				<textarea
 					x-text="hashtags"
+					x-init="fetchHashtags()"
 					readonly
 					id="toCopy"
 					class="
@@ -139,7 +150,10 @@
 				<p class="block mb-4" >Add a hashtag to categories:</p>
 
 				<div
-					x-data="{ newHashtag: '', categories: '', range: '' }"
+					x-data="{
+						categories: '',
+						range: ''
+					}"
 					class="
 						flex
 						flex-wrap
@@ -149,7 +163,7 @@
 				">
 
 					<input
-						x-model="newHashtag"
+						x-model="hashtagToEdit"
 						placeholder="...add hashtag"
 						type="text"
 						class="
@@ -290,11 +304,11 @@
 									rounded
 									px-4
 									py-2
+									bg-bg_1
+									text-fg_0
 								"
 								x-text="resultingHashtag"
-								x-data="{ toggle: false }"
-								:class="toggle ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
-								@click="toggle = !toggle;"
+								@click="openTab = 2; hashtagToEdit = resultingHashtag"
 							></button>
 						</template>
 					</div>
@@ -383,7 +397,7 @@
 					rounded
 				">Get</button>
 			<button
-				@click="openTab = 2"
+				@click="openTab = 2; hashtagToEdit = ''"
 				:class="openTab === 2 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
 				class="
 					flex-1
@@ -392,7 +406,7 @@
 					border
 					border-bg_2
 					rounded
-				">Add</button>
+				">Add/Edit</button>
 			<button
 				@click="openTab = 3"
 				:class="openTab === 3 ? 'bg-blue text-bg_0' : 'bg-bg_1 text-fg_0'"
@@ -458,6 +472,7 @@
 					openTab: 1,
 					listCatBtn: 'default',
 					listRangeBtn: '0-50k',
+					hashtagToEdit: null,
 					toast: { isVisible: false, isSuccess: false, message: 'error' },
 					store: this.$persist({
 						categories: [ { name: 'default', hashtags: [] } ],
@@ -485,7 +500,7 @@
 						// populate hashtags of selected categories
 						selected.forEach(selectedCategory => {
 
-							if (selectedCategory !== 'default') {
+							if (selectedCategory && selectedCategory !== 'default') {
 
 								// merge non default category hashtags
 								categoryHashtagIds = [
@@ -561,7 +576,7 @@
 
 					addHashtag() {
 
-						if (!this.newHashtag) {
+						if (!this.hashtagToEdit) {
 							this.error('hashtag is missing');
 							return false;
 						};
@@ -578,7 +593,7 @@
 
 						let id = parseInt(
 							Object.keys(this.store.hashtags).find(
-								key => this.store.hashtags[key] === this.newHashtag
+								key => this.store.hashtags[key] === this.hashtagToEdit
 							)
 						);
 
@@ -600,7 +615,7 @@
 									)
 								: 0;
 							id = parseInt(latest) + 1;
-							this.store.hashtags[id] = this.newHashtag;
+							this.store.hashtags[id] = this.hashtagToEdit;
 						}
 
 						// add to categories
@@ -611,7 +626,7 @@
 						// and to range
 						this.store.ranges.find(rangeEntry => rangeEntry.name === this.range).hashtags.push(id);
 
-						this.newHashtag = '';
+						this.hashtagToEdit = '';
 						this.success('hashtag added');
 
 					},
@@ -643,7 +658,7 @@
 							);
 
 						this.resultingHashtagsIds.map((id) => {
-							this.resultingHashtags.push('#' + this.store.hashtags[id]);
+							this.resultingHashtags.push(this.store.hashtags[id]);
 						});
 
 						return this.resultingHashtags;
