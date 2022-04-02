@@ -305,7 +305,7 @@
 
 			<section x-show="openTab === 4">
 
-				<div x-data="{ files: null }">
+				<div x-data="{ files: null, csvFiles: null }">
 
 					<p class="block mb-4" >Backup your hashtags and categories:</p>
 
@@ -322,7 +322,7 @@
 						"
 					>Backup</button>
 
-					<p class="block mt-8 mb-4" >Import your backup:</p>
+					<p class="block mt-8 mb-4" >Restore your backup:</p>
 
 					<label
 						class="
@@ -337,6 +337,7 @@
 						<input
 							type="file"
 							class="sr-only"
+							name="restore"
 							x-on:change="files = Object.values($event.target.files)"
 						>
 						<span x-text="
@@ -356,6 +357,42 @@
 							focus:bg-br_orange
 						"
 					>Restore</button>
+
+					<p class="block mt-8 mb-4" >Import a CSV:</p>
+
+					<label
+						class="
+							border
+							py-2
+							px-4
+							rounded
+							cursor-pointer
+							inline-block
+							mb-4
+					">
+						<input
+							type="file"
+							class="sr-only"
+							name="import-csv"
+							x-on:change="csvFiles = Object.values($event.target.files)"
+						>
+						<span x-text="
+							csvFiles ? csvFiles.map(file => file.name).join(', ') : 'Select csv to be imported...'
+						"></span>
+					</label>
+
+					<button
+						@click="importCSV"
+						class="
+							h-10
+							rounded
+							px-4
+							py-2
+							bg-orange
+							text-bg_0
+							focus:bg-br_orange
+						"
+					>Import CSV</button>
 
 				</div>
 
@@ -453,13 +490,7 @@
 
 				return {
 
-					hashtags: '',
-					category: '',
-					openTab: 1,
-					listCatBtn: 'default',
-					listRangeBtn: '0-50k',
-					toast: { isVisible: false, isSuccess: false, message: 'error' },
-					store: this.$persist({
+					defaultData: {
 						categories: [ { name: 'default', hashtags: [] } ],
 						hashtags: {},
 						ranges: [
@@ -468,7 +499,14 @@
 							{ name: '100k-1m', amount: 5, hashtags: [] },
 							{ name: '> 1m', amount: 2, hashtags: [] }
 						]
-					}),
+					},
+					hashtags: '',
+					category: '',
+					openTab: 1,
+					listCatBtn: 'default',
+					listRangeBtn: '0-50k',
+					toast: { isVisible: false, isSuccess: false, message: 'error' },
+					store: this.$persist({...this.defaultData}),
 
 					fetchHashtags() {
 
@@ -645,6 +683,65 @@
 						this.resultingHashtagsIds.map((id) => {
 							this.resultingHashtags.push('#' + this.store.hashtags[id]);
 						});
+
+					},
+
+					importCSV() {
+
+						if (!this.csvFiles || this.csvFiles.length < 1) {
+							this.error('no file selected');
+							return false;
+						}
+
+						const reader = new FileReader();
+						reader.readAsText(this.csvFiles[0]);
+
+						reader.onload = () => {
+
+							if (!reader.result) {
+								this.error('could not read file');
+								return false;
+							}
+
+							// prepare data
+							const data = {...this.defaultData};
+
+							try {
+								const lines = reader.result.split("\n");
+
+								lines.forEach((line, index) => {
+									index++;
+									const item = line.split(";");
+									const hashtag = item[0].replace('#', '').trim();
+									const range   = item[1].trim();
+									const category = item[2].trim();
+
+									// add to hashtags
+									data.hashtags[index] = hashtag;
+
+									// add hashtag to ranges
+									data.ranges.find(entry => entry.name === range).hashtags.push(index);
+
+									// add categories
+									data.categories.find(entry => entry.name === category) ||
+									data.categories.push({ name: category, hashtags: [] });
+									// add hashtag to categories
+									data.categories.find(entry => entry.name === category).hashtags.push(index);
+								});
+
+							} catch(e) {
+								this.error('wrong file');
+								return false;
+							}
+
+							this.store.categories = data.categories;
+							this.store.hashtags = data.hashtags;
+							this.store.ranges = data.ranges;
+
+							this.csvFiles = null;
+							this.success('CSV imported');
+
+						}
 
 					},
 
