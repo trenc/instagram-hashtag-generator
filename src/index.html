@@ -711,9 +711,15 @@
 
 								lines.forEach((line, index) => {
 									index++;
-									const item = line.split(";");
-									const hashtag = item[0].replace('#', '').trim();
-									const range   = item[1].trim();
+									const item = line.split(';');
+
+									// empty/fautly line or maybe header
+									if (item.length < 3 || item[0].indexOf('#') === -1) {
+										return;
+									}
+
+									const hashtag  = item[0].replace('#', '').trim();
+									const range    = item[1].trim();
 									const category = item[2].trim();
 
 									// add to hashtags
@@ -730,7 +736,8 @@
 								});
 
 							} catch(e) {
-								this.error('wrong file');
+								this.error('wrong file format');
+								console.log(e);
 								return false;
 							}
 
