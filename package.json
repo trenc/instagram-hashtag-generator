@@ -1,6 +1,6 @@
 {
   "name": "instagram-hashtag-generator",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Opinionated hashtag generator for Instagram posts",
   "author": "Tommy Schmucker",
   "license": "AGPL",
