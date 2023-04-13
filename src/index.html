@@ -6,8 +6,8 @@
 		<meta name="description" content="Opinionated hashtag generator for Instagram posts">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="assets/css/style.css" />
-		<script src="assets/js/alpinejs.persist.3.10.5.min.js" defer></script>
-		<script src="assets/js/alpinejs.3.10.5.min.js" defer></script>
+		<script src="assets/js/alpinejs.persist.3.x.x.min.js" defer></script>
+		<script src="assets/js/alpinejs.3.12.0.min.js" defer></script>
 		<script>
 			if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
 				document.documentElement.classList.add('dark');
@@ -282,7 +282,7 @@
 							mb-4
 						"
 					>
-					<template x-for="resultingHashtag in resultingHashtags">
+					<template x-for="resultingHashtag in resultingHashtags" :key="resultingHashtag">
 							<button
 								:aria-label="resultingHashtag"
 								class="
@@ -661,24 +661,17 @@
 						this.resultingHashtagsIds = [];
 						this.resultingHashtags = [];
 
-							this.store.categories.forEach((category) => {
+						categoryHashtagIds = [...this.store.categories.find(
+							category => category.name === this.listCatBtn
+						).hashtags];
 
-								if (category.name === this.listCatBtn) {
-									categoryHashtagIds = [...category.hashtags];
-								}
+						rangeHashtagIds = [...this.store.ranges.find(
+							range => range.name === this.listRangeBtn
+						).hashtags];
 
-							});
-
-							this.store.ranges.forEach((range) => {
-								if (range.name === this.listRangeBtn) {
-									rangeHashtagIds = [...range.hashtags];
-								}
-
-							});
-
-							this.resultingHashtagsIds = categoryHashtagIds.filter(
-								id => rangeHashtagIds.includes(id)
-							);
+						this.resultingHashtagsIds = categoryHashtagIds.filter(
+							id => rangeHashtagIds.includes(id)
+						);
 
 						this.resultingHashtagsIds.map((id) => {
 							this.resultingHashtags.push('#' + this.store.hashtags[id]);
